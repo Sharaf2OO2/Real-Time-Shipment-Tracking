@@ -10,6 +10,8 @@ raw_stream = spark.readStream \
     .option("subscribe", "shipments_raw") \
     .load()
 
+raw_stream = raw_stream.selectExpr("CAST(value AS STRING) as json_data")
+
 query = raw_stream.writeStream \
     .format("json") \
     .option("path", "hdfs://localhost:9000/raw_shipments") \
