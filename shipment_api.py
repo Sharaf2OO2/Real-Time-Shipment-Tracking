@@ -27,10 +27,12 @@ def generate_shipment_data():
         "customer_id": f"CUST{fake.random_number(digits=6)}",
         "customer_first_name": customer_first_name,
         "customer_last_name": customer_last_name,
+        "customer_email": fake.user_name() + "@gmail.com",
+        "customer_phone": fake.basic_phone_number(),
         "customer_type": fake.random_element(elements=("Business", "Individual")),
         "customer_region": origin_country,
         "current_status": fake.random_element(elements=("Pending", "In Transit", "Delivered", "Delayed")),
-        "last_updated": fake.iso8601(),
+        "last_updated": fake.date_time_between(start_date="now", end_date="now"),
         "estimated_delivery_date": fake.date_between(start_date="today", end_date="+7d"),
         "actual_delivery_date": None if fake.boolean(chance_of_getting_true=20) else fake.date_between(start_date="today", end_date="+7d"),
         "current_location": {
@@ -64,5 +66,3 @@ def generate_shipment_data():
         "temperature_sensitivity": fake.boolean()
     }
     return data
-    
-    

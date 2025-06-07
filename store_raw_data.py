@@ -16,6 +16,8 @@ query = raw_stream.writeStream \
     .format("json") \
     .option("path", "hdfs://localhost:9000/raw_shipments") \
     .option("checkpointLocation", "hdfs://localhost:9000//checkpoints/raw_shipments/") \
+    .outputMode("append") \
+    .trigger(processingTime="1 minute") \
     .start()
 
 query.awaitTermination()
