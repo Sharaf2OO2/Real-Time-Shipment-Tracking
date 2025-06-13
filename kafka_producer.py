@@ -23,7 +23,7 @@ def stream_shipment_data():
             shipment_data = generate_shipment_data()
             print(f"Producing shipment data: {shipment_data}")
             producer.send(KAFKA_TOPIC, shipment_data)
-            time.sleep(0.1)
+            time.sleep(100000)
     except KeyboardInterrupt:
         print("Stopping shipment data producer...")
     finally:
