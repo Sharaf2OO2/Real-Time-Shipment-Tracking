@@ -1,24 +1,31 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json, to_json, struct
+from pyspark.sql.functions import col, from_json
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, BooleanType, TimestampType
-from kafka import KafkaProducer
 import json, time
-from datetime import date
+import logging
 
-KAFKA_BROKER = "172.29.198.1:9092"
-
-producer = KafkaProducer(bootstrap_servers=KAFKA_BROKER)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 spark = SparkSession.builder \
     .appName("RawDataToHDFS") \
+    .config("spark.jars.packages", "net.snowflake:snowflake-jdbc:3.17.0,net.snowflake:spark-snowflake_2.12:3.0.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0") \
+    .config("spark.sql.catalogImplementation", "in-memory") \
+    .config("spark.sql.streaming.checkpointLocation.deleteSourceCheckpointMetadata", "true") \
     .getOrCreate()
 
 raw_stream = spark.readStream \
     .format("kafka") \
-    .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+    .option("kafka.bootstrap.servers", "172.29.198.1:9092") \
     .option("subscribe", "shipments_raw") \
     .option("failOnDataLoss", "false") \
+    .option("startingOffsets", "latest") \
+    .option("maxOffsetsPerTrigger", "1000") \
+    .option("kafka.session.timeout.ms", "30000") \
+    .option("kafka.request.timeout.ms", "40000") \
     .load()
+
+raw_stream = raw_stream.selectExpr("CAST(value AS STRING)")
 
 shipment_schema = StructType([
     StructField("shipment_id", StringType(), True),
@@ -74,96 +81,245 @@ shipment_schema = StructType([
     StructField("temperature_sensitivity", BooleanType(), True),
 ])
 
-parsed_stream = raw_stream.selectExpr("CAST(value AS STRING)") \
-    .withColumn("parsed_value", from_json(col("value"), shipment_schema)) \
-    .select("parsed_value.*")
+flattened_df = raw_stream.withColumn("value", col("value").cast(StringType())) \
+    .withColumn("data", from_json(col("value"), shipment_schema)) \
+    .select("data.*")
 
-shipments = parsed_stream.withColumn("key", col("shipment_id")) \
-    .withColumn("value", to_json(struct(
-        "shipment_id",
-        "order_id",
-        "customer_id",
-        "shipment_type",
-        "shipment_weight",
-        "shipment_dimensions",
-        "origin_address",
-        "destination_address",
-        "priority_level",
-        "temperature_sensitivity",
-        "transport_mode",
-        "shipment_cost",
-        "revenue_generated",
-        "insurance_coverage"
-    )))
+shipments = flattened_df.select(
+    col("shipment_id"),
+    col("order_id"),
+    col("customer_id"),
+    col("shipment_type"),
+    col("shipment_weight"),
+    col("shipment_dimensions.length").alias("shipment_length"),
+    col("shipment_dimensions.width").alias("shipment_width"),
+    col("shipment_dimensions.height").alias("shipment_height"),
+    col("origin_address.address").alias("origin_address"),
+    col("origin_address.postal_code").alias("origin_postal_code"),
+    col("origin_address.country").alias("origin_country"),
+    col("destination_address.address").alias("destination_address"),
+    col("destination_address.postal_code").alias("destination_postal_code"),
+    col("destination_address.country").alias("destination_country"),
+    col("priority_level"),
+    col("temperature_sensitivity"),
+    col("transport_mode"),
+    col("shipment_cost"),
+    col("revenue_generated"),
+    col("insurance_coverage"),
+)
 
-customers = parsed_stream.withColumn("key", col("customer_id")) \
-    .withColumn("value", to_json(struct(
-        "customer_id",
-        "customer_first_name",
-        "customer_last_name",
-        "customer_email",
-        "customer_phone",
-        "customer_type",
-        "customer_region"
-    )))
+customers = flattened_df.select(
+    col("customer_id"),
+    col("customer_first_name"),
+    col("customer_last_name"),
+    col("customer_email"),
+    col("customer_phone"),
+    col("customer_type"),
+    col("customer_region"),
+)
 
-delivery_status = parsed_stream.withColumn("key", col("shipment_id")) \
-    .withColumn("value", to_json(struct(
-        "shipment_id",
-        "current_status",
-        "last_updated",
-        "estimated_delivery_date",
-        "actual_delivery_date",
-        "current_location",
-        "delivery_attempts",
-        "distance_traveled",
-        "delivery_penalty",
-        "delay_reason"
-    )))
+delivery_status = flattened_df.select(
+    col("shipment_id"),
+    col("current_status"),
+    col("last_updated"),
+    col("estimated_delivery_date"),
+    col("actual_delivery_date"),
+    col("current_location.address").alias("current_address"),
+    col("current_location.postal_code").alias("current_postal_code"),
+    col("current_location.country").alias("current_country"),
+    col("delivery_attempts"),
+    col("delay_reason"),
+    col("delivery_penalty"),
+    col("distance_traveled")
+)
 
-metadata = parsed_stream.withColumn("key", col("shipment_id")) \
-    .withColumn("value", to_json(struct(
-        "shipment_id",
-        "shipment_created_date",
-        "order_date",
-        "warehouse_id",
-        "delivery_agent_id",
-        "vehicle_id"
-    )))
+metadata = flattened_df.select(
+    col("shipment_id"),
+    col("order_date"),
+    col("shipment_created_date"),
+    col("warehouse_id"),
+    col("delivery_agent_id"),
+    col("vehicle_id")
+)
 
-# shipments_query = shipments.select("key", "value") \
-#     .writeStream \
-#     .format("kafka") \
-#     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-#     .option("topic", "shipments") \
-#     .option("checkpointLocation", "/tmp/checkpoint/shipments") \
-#     .start()
+shipments.createOrReplaceTempView("shipments")
+customers.createOrReplaceTempView("customers")
+delivery_status.createOrReplaceTempView("delivery_status")
+metadata.createOrReplaceTempView("metadata")
 
-customers_query = customers.select("key", "value") \
-    .writeStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-    .option("topic", "customers") \
-    .option("checkpointLocation", "/tmp/checkpoint/customers") \
-    .start()
+query = '''SELECT 
+            CASE
+                WHEN LENGTH(customer_id) < 10 THEN RPAD(customer_id, 10, 'x')
+                ELSE customer_id
+            END customer_id,
+            customer_first_name first_name,
+            customer_last_name last_name,
+            customer_email email,
+            customer_phone phone,
+            LOWER(customer_type) customer_type,
+            customer_region
+            FROM customers
+            '''
+customers = spark.sql(query)
 
-# # delivery_status_query = delivery_status.select("key", "value") \
-# #     .writeStream \
-# #     .format("kafka") \
-# #     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-# #     .option("topic", "delivery_status") \
-# #     .option("checkpointLocation", "/tmp/checkpoint/delivery_status") \
-# #     .start()
+query = '''SELECT 
+            CASE
+                WHEN LENGTH(shipment_id) < 18 THEN RPAD(shipment_id, 18, 'x')
+                ELSE shipment_id
+            END shipment_id,
+            CASE
+                WHEN LENGTH(order_id) < 17 THEN RPAD(order_id, 17, 'x')
+                ELSE order_id
+            END order_id,
+            CASE
+                WHEN LENGTH(customer_id) < 10 THEN RPAD(customer_id, 10, 'x')
+                ELSE customer_id
+            END customer_id,
+            LOWER(shipment_type) shipment_type,
+            shipment_weight,
+            shipment_length,
+            shipment_width,
+            shipment_height,
+            origin_address,
+            origin_postal_code,
+            origin_country,
+            destination_address,
+            destination_postal_code,
+            destination_country,
+            LOWER(priority_level) priority_level,
+            CASE temperature_sensitivity
+                WHEN 'true' THEN 'sensitive'
+                ELSE 'insensitive'
+            END temperature_sensitivity,
+            LOWER(transport_mode) transport_mode,
+            shipment_cost,
+            revenue_generated,
+            insurance_coverage
+            FROM shipments
+            '''
+shipments = spark.sql(query)
 
-# # metadata_query = metadata.select("key", "value") \
-# #     .writeStream \
-# #     .format("kafka") \
-# #     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-# #     .option("topic", "metadata") \
-# #     .option("checkpointLocation", "/tmp/checkpoint/metadata") \
-# #     .start()
+query = '''SELECT 
+            CASE
+                WHEN LENGTH(shipment_id) < 18 THEN RPAD(shipment_id, 18, 'x')
+                ELSE shipment_id
+            END shipment_id,
+            LOWER(current_status) current_status,
+            CAST(last_updated AS TIMESTAMP),
+            CAST(estimated_delivery_date AS TIMESTAMP),
+            CAST(actual_delivery_date AS TIMESTAMP),
+            current_address,
+            current_postal_code,
+            current_country,
+            delivery_attempts,
+            CASE
+                WHEN delay_reason IS NULL THEN 'n/a'
+                ELSE LOWER(delay_reason)
+            END delay_reason,
+            delivery_penalty,
+            distance_traveled
+            FROM delivery_status
+            '''
+delivery_status = spark.sql(query)
 
-# # shipments_query.awaitTermination()
-customers_query.awaitTermination()
-# # delivery_status_query.awaitTermination()
-# # metadata_query.awaitTermination()
+query = '''SELECT 
+            CASE
+                WHEN LENGTH(shipment_id) < 18 THEN RPAD(shipment_id, 18, 'x')
+                ELSE shipment_id
+            END shipment_id,
+            CAST(order_date AS TIMESTAMP),
+            CAST(shipment_created_date AS TIMESTAMP),
+            CASE
+                WHEN LENGTH(warehouse_id) < 5 THEN RPAD(warehouse_id, 5, 'x')
+                ELSE warehouse_id
+            END warehouse_id,
+            CASE
+                WHEN LENGTH(delivery_agent_id) < 9 THEN RPAD(delivery_agent_id, 9, 'x')
+                ELSE delivery_agent_id
+            END delivery_agent_id,
+            CASE
+                WHEN LENGTH(vehicle_id) < 7 THEN RPAD(vehicle_id, 7, 'x')
+                ELSE vehicle_id
+            END vehicle_id
+            FROM metadata
+            '''
+metadata = spark.sql(query)
+
+with open("snowflake_config.json") as f:
+    options = json.load(f)
+
+def write_to_snowflake(batch_df, batch_id, table_name):
+    """Write each batch to Snowflake with error handling"""
+    try:
+        if batch_df.count() > 0:  # Only write if there's data
+            logger.info(f"Writing batch {batch_id} with {batch_df.count()} records to Snowflake table {table_name}")
+            batch_df.write \
+                .format("snowflake") \
+                .options(**options) \
+                .option("dbtable", table_name) \
+                .mode("append") \
+                .save()
+            logger.info(f"Batch {batch_id} written successfully to {table_name}")
+        else:
+            logger.info(f"Batch {batch_id} is empty for {table_name}, skipping write")
+    except Exception as e:
+        logger.error(f"Error writing batch {batch_id} to {table_name}: {str(e)}")
+
+timestamp = int(time.time())
+checkpoint_paths = {
+    "customers": f"/tmp/checkpoint/customers/{timestamp}",
+    "shipments": f"/tmp/checkpoint/shipments/{timestamp}",
+    "delivery_status": f"/tmp/checkpoint/delivery_status/{timestamp}",
+    "metadata": f"/tmp/checkpoint/metadata/{timestamp}"
+}
+
+try:
+
+    queries = []
+    
+    # Customers stream
+    customers_query = customers.writeStream \
+        .foreachBatch(lambda df, batch_id: write_to_snowflake(df, batch_id, "customers")) \
+        .outputMode("append") \
+        .option("checkpointLocation", checkpoint_paths["customers"]) \
+        .trigger(processingTime='30 seconds') \
+        .start()
+    queries.append(customers_query)
+    
+    # Shipments stream
+    shipments_query = shipments.writeStream \
+        .foreachBatch(lambda df, batch_id: write_to_snowflake(df, batch_id, "shipments")) \
+        .outputMode("append") \
+        .option("checkpointLocation", checkpoint_paths["shipments"]) \
+        .trigger(processingTime='30 seconds') \
+        .start()
+    queries.append(shipments_query)
+    
+    # Delivery status stream
+    delivery_status_query = delivery_status.writeStream \
+        .foreachBatch(lambda df, batch_id: write_to_snowflake(df, batch_id, "delivery_status")) \
+        .outputMode("append") \
+        .option("checkpointLocation", checkpoint_paths["delivery_status"]) \
+        .trigger(processingTime='30 seconds') \
+        .start()
+    queries.append(delivery_status_query)
+    
+    # Metadata stream
+    metadata_query = metadata.writeStream \
+        .foreachBatch(lambda df, batch_id: write_to_snowflake(df, batch_id, "metadata")) \
+        .outputMode("append") \
+        .option("checkpointLocation", checkpoint_paths["metadata"]) \
+        .trigger(processingTime='30 seconds') \
+        .start()
+    queries.append(metadata_query)
+    
+    logger.info("All streaming queries started successfully")
+    
+    for query in queries:
+        query.awaitTermination()
+    
+except Exception as e:
+    logger.error(f"Streaming query failed: {str(e)}")
+    for query in queries:
+        query.stop()
+    spark.stop()
