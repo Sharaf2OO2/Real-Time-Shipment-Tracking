@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 spark = SparkSession.builder \
-    .appName("RawDataToHDFS") \
+    .appName("ProcessAndStoreData") \
     .config("spark.jars.packages", "net.snowflake:snowflake-jdbc:3.17.0,net.snowflake:spark-snowflake_2.12:3.0.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0") \
     .config("spark.sql.catalogImplementation", "in-memory") \
     .config("spark.sql.streaming.checkpointLocation.deleteSourceCheckpointMetadata", "true") \
@@ -265,6 +265,7 @@ def write_to_snowflake(batch_df, batch_id, table_name):
     except Exception as e:
         logger.error(f"Error writing batch {batch_id} to {table_name}: {str(e)}")
 
+# Use unique checkpoint locations with timestamp
 timestamp = int(time.time())
 checkpoint_paths = {
     "customers": f"/tmp/checkpoint/customers/{timestamp}",
@@ -274,6 +275,14 @@ checkpoint_paths = {
 }
 
 try:
+    # Start HDFS write stream for raw data
+    hdfs_query = raw_stream.writeStream \
+        .format("parquet") \
+        .option("path", "/raw_shipments/") \
+        .option("checkpointLocation", "/checkpoints/raw_shipments/") \
+        .outputMode("append") \
+        .trigger(processingTime="1 hour") \
+        .start()
 
     queries = []
     
