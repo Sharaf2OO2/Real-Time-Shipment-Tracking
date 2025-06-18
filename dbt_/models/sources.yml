@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: silver_data
+    description: "Silver data from the source systems"
+    database: shipment_db
+    schema: silver
+    tables:
+      - name: customers
+      - name: shipments
+      - name: delivery_status
+      - name: metadata
