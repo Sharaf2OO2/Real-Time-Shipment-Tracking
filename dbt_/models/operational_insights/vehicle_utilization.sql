@@ -1,0 +1,6 @@
+SELECT 
+    VEHICLE_ID, 
+    COUNT(*) TOTAL_SHIPMENTS
+FROM {{ source('silver_data', 'metadata') }}
+GROUP BY VEHICLE_ID
+ORDER BY TOTAL_SHIPMENTS DESC

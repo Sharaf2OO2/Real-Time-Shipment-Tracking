@@ -1,0 +1,6 @@
+SELECT
+    ORDER_DATE::DATE SHIPMENT_DATE,
+    COUNT(*) SHIPMENT_VOLUME
+FROM {{ source('silver_data', 'metadata') }}
+GROUP BY 1
+ORDER BY 1
