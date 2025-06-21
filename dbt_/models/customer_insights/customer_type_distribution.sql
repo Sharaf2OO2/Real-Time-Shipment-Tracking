@@ -9,4 +9,4 @@ SELECT
         WHEN CUSTOMER_TYPE = 'business' THEN 1 
         ELSE 0 
     END) * 100 BUSINESS_CUSTOMER_PERCENTAGE
-FROM {{ source('silver_data', 'customer') }}
+FROM {{ source('silver_data', 'customers') }}

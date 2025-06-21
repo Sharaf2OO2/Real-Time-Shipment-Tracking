@@ -7,6 +7,24 @@ sources:
     schema: silver
     tables:
       - name: customers
+        tests:
+          - unique:
+              column_name: customer_id
+          - not_null:
+              column_name: customer_id
       - name: shipments
+        tests:
+          - unique:
+              column_name: shipment_id
+          - not_null:
+              column_name: shipment_id
+              column_name: customer_id
+        columns:
+          - name: shipment_id
+          - name: customer_id
+          - name: product_id
+          - name: shipment_date
+          - name: delivery_status
+          - name: metadata
       - name: delivery_status
       - name: metadata
