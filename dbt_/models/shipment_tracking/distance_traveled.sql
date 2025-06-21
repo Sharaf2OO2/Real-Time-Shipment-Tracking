@@ -1,0 +1,3 @@
+SELECT SHIPMENT_ID, SUM(DISTANCE_TRAVELED) TOTAL_DISTANCE_TRAVELED
+FROM {{ source('silver_data', 'delivery_status') }}
+GROUP BY 1
