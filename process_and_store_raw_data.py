@@ -249,102 +249,88 @@ with open("snowflake_config.json") as f:
     options = json.load(f)
 
 def write_to_snowflake(batch_df, batch_id, table_name):
-    """Write each batch to Snowflake with duplicate checking"""
+    """Write each batch to Snowflake with comprehensive duplicate prevention"""
     try:
-        if batch_df.count() > 0:  # Only write if there's data
+        if batch_df.count() > 0:
             logger.info(f"Processing batch {batch_id} with {batch_df.count()} records for Snowflake table {table_name}")
+           
+            if table_name == "customers":
+                key_columns = ["customer_id"]
+            elif table_name == "shipments":  
+                key_columns = ["shipment_id"]
+            elif table_name == "delivery_status":
+                key_columns = ["shipment_id", "last_updated"]
+            elif table_name == "metadata":
+                key_columns = ["shipment_id"]
+            else:
+                key_columns = []
             
-            # Check if the Snowflake table exists first
+            if key_columns:
+                initial_count = batch_df.count()
+                batch_df = batch_df.dropDuplicates(key_columns)
+                final_count = batch_df.count()
+                if initial_count != final_count:
+                    logger.info(f"Removed {initial_count - final_count} duplicates within batch for {table_name}")
+            
+            table_exists = False
             try:
-                # Try to read from the table to see if it exists
                 existing_df = spark.read \
                     .format("snowflake") \
                     .options(**options) \
                     .option("dbtable", table_name) \
-                    .load() \
-                    .limit(1)
-                
+                    .load()
                 table_exists = True
                 logger.info(f"Table {table_name} exists in Snowflake")
-                
-            except Exception as table_check_error:
-                # Table doesn't exist, so we'll write all records
+            except:
+                logger.info(f"Table {table_name} doesn't exist, will create it")
                 table_exists = False
-                logger.info(f"Table {table_name} doesn't exist in Snowflake, will create and write all records")
             
-            if table_exists:
-                # Check for duplicates based on table type
-                if table_name == "customers":
-                    # Get list of customer_ids from the batch
-                    batch_ids = [row.customer_id for row in batch_df.select("customer_id").collect()]
-                    
-                    if batch_ids:
-                        # Check which customer_ids already exist
-                        ids_str = "', '".join(batch_ids)
-                        try:
-                            existing_records = spark.read \
-                                .format("snowflake") \
-                                .options(**options) \
-                                .option("query", f"SELECT customer_id FROM {table_name} WHERE customer_id IN ('{ids_str}')") \
-                                .load()
-                            
-                            # Filter out records that already exist
-                            new_records = batch_df.join(existing_records, "customer_id", "left_anti")
-                            
-                        except Exception as e:
-                            logger.warning(f"Error checking for existing customers, writing all records: {str(e)}")
-                            new_records = batch_df
-                    else:
-                        new_records = batch_df
+            if table_exists and key_columns:
+                try:
+                    if table_name in ["customers", "shipments"]:
+                        primary_key = key_columns[0]
+              
+                        existing_keys_df = spark.read \
+                            .format("snowflake") \
+                            .options(**options) \
+                            .option("dbtable", table_name) \
+                            .load() \
+                            .select(primary_key)
+
+                        new_records_df = batch_df.join(existing_keys_df, primary_key, "left_anti")
                         
-                elif table_name == "shipments":
-                    # Get list of shipment_ids from the batch
-                    batch_ids = [row.shipment_id for row in batch_df.select("shipment_id").collect()]
-                    
-                    if batch_ids:
-                        # Check which shipment_ids already exist
-                        ids_str = "', '".join(batch_ids)
-                        try:
-                            existing_records = spark.read \
-                                .format("snowflake") \
-                                .options(**options) \
-                                .option("query", f"SELECT shipment_id FROM {table_name} WHERE shipment_id IN ('{ids_str}')") \
-                                .load()
-                            
-                            # Filter out records that already exist
-                            new_records = batch_df.join(existing_records, "shipment_id", "left_anti")
-                            
-                        except Exception as e:
-                            logger.warning(f"Error checking for existing shipments, writing all records: {str(e)}")
-                            new_records = batch_df
-                    else:
-                        new_records = batch_df
+                        skipped_count = batch_df.count() - new_records_df.count()
+                        if skipped_count > 0:
+                            logger.info(f"Skipped {skipped_count} duplicate records for {table_name}")
                         
-                else:
-                    # For other tables (delivery_status, metadata), append all records
-                    new_records = batch_df
-            else:
-                # Table doesn't exist, write all records
-                new_records = batch_df
+                        batch_df = new_records_df
+
+                    elif table_name == "delivery_status":
+                        pass 
+                        
+                except Exception as dedup_error:
+                    logger.warning(f"Could not perform duplicate check against Snowflake for {table_name}: {str(dedup_error)}")
             
-            # Only write if there are new records
-            if new_records.count() > 0:
-                logger.info(f"Writing {new_records.count()} new records to Snowflake table {table_name}")
-                new_records.write \
+            if batch_df.count() > 0:
+                logger.info(f"Writing {batch_df.count()} records to Snowflake table {table_name}")
+                batch_df.write \
                     .format("snowflake") \
                     .options(**options) \
                     .option("dbtable", table_name) \
                     .mode("append") \
                     .save()
-                logger.info(f"Batch {batch_id} written successfully to {table_name}")
+                logger.info(f"Successfully wrote batch {batch_id} to {table_name}")
             else:
-                logger.info(f"All records in batch {batch_id} already exist in {table_name}, skipping write")
+                logger.info(f"No new records to write for batch {batch_id} to {table_name}")
                 
         else:
-            logger.info(f"Batch {batch_id} is empty for {table_name}, skipping write")
+            logger.info(f"Batch {batch_id} is empty for {table_name}, skipping")
+            
     except Exception as e:
-        logger.error(f"Error writing batch {batch_id} to {table_name}: {str(e)}")
-        raise  # Re-raise the exception to see the full stack trace
+        logger.error(f"Error processing batch {batch_id} for {table_name}: {str(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        raise
     
 # Use unique checkpoint locations with timestamp
 timestamp = int(time.time())
