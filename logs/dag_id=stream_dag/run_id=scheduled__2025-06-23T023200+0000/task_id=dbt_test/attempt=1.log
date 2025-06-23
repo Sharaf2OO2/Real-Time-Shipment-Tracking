@@ -1,5 +1,0 @@
-{"timestamp":"2025-06-23T02:32:18.570198","level":"info","event":"DAG bundles loaded: dags-folder","logger":"airflow.dag_processing.bundles.manager.DagBundlesManager"}
-{"timestamp":"2025-06-23T02:32:18.596180","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/stream_dag.py","logger":"airflow.models.dagbag.DagBag"}
-{"timestamp":"2025-06-23T02:32:19.475373","level":"info","event":"Tmp dir root location: /tmp","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
-{"timestamp":"2025-06-23T02:32:19.535214","level":"info","event":"Running command: ['/usr/bin/bash', '-c', 'cd /opt/airflow/dbt_ && dbt test']","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
-{"timestamp":"2025-06-23T02:32:19.693867","level":"info","event":"Output:","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}

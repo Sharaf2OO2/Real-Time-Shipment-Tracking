@@ -1,5 +1,5 @@
-# Base image from the official Airflow image
-FROM apache/airflow:3.0.2
+# Base image from the official Airflow image - using 2.9.3 for stability
+FROM apache/airflow:2.9.3
 
 # Set the environment variable for Airflow
 ENV AIRFLOW_HOME=/opt/airflow

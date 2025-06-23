@@ -1,0 +1,69 @@
+[2025-06-23T06:02:30.863+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-06-23T06:02:30.993+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: stream_dag.dbt_run scheduled__2025-06-23T06:00:00+00:00 [queued]>
+[2025-06-23T06:02:31.037+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: stream_dag.dbt_run scheduled__2025-06-23T06:00:00+00:00 [queued]>
+[2025-06-23T06:02:31.040+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-06-23T06:02:31.100+0000] {taskinstance.py:2330} INFO - Executing <Task(BashOperator): dbt_run> on 2025-06-23 06:00:00+00:00
+[2025-06-23T06:02:31.122+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=372) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-23T06:02:31.126+0000] {standard_task_runner.py:64} INFO - Started process 395 to run task
+[2025-06-23T06:02:31.126+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'stream_dag', 'dbt_run', 'scheduled__2025-06-23T06:00:00+00:00', '--job-id', '12', '--raw', '--subdir', 'DAGS_FOLDER/stream_dag.py', '--cfg-path', '/tmp/tmpiihnf11q']
+[2025-06-23T06:02:31.134+0000] {standard_task_runner.py:91} INFO - Job 12: Subtask dbt_run
+[2025-06-23T06:02:31.262+0000] {task_command.py:426} INFO - Running <TaskInstance: stream_dag.dbt_run scheduled__2025-06-23T06:00:00+00:00 [running]> on host b2b82406f119
+[2025-06-23T06:02:31.574+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Sharaf' AIRFLOW_CTX_DAG_ID='stream_dag' AIRFLOW_CTX_TASK_ID='dbt_run' AIRFLOW_CTX_EXECUTION_DATE='2025-06-23T06:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-06-23T06:00:00+00:00'
+[2025-06-23T06:02:31.578+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-06-23T06:02:31.581+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2025-06-23T06:02:31.585+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'cd /opt/***/dbt_ && dbt run --select cost_analysis customer_insights delivery_performance operational_insights shipment_tracking shipments_overview']
+[2025-06-23T06:02:31.608+0000] {subprocess.py:86} INFO - Output:
+[2025-06-23T06:02:43.928+0000] {subprocess.py:93} INFO - [0m06:02:43  Running with dbt=1.10.2
+[2025-06-23T06:02:49.399+0000] {subprocess.py:93} INFO - [0m06:02:49  Registered adapter: snowflake=1.9.4
+[2025-06-23T06:02:52.356+0000] {subprocess.py:93} INFO - [0m06:02:52  Found 23 models, 4 data tests, 4 sources, 476 macros
+[2025-06-23T06:02:52.369+0000] {subprocess.py:93} INFO - [0m06:02:52
+[2025-06-23T06:02:52.373+0000] {subprocess.py:93} INFO - [0m06:02:52  Concurrency: 4 threads (target='dev')
+[2025-06-23T06:02:52.376+0000] {subprocess.py:93} INFO - [0m06:02:52
+[2025-06-23T06:02:54.964+0000] {subprocess.py:93} INFO - [0m06:02:54  1 of 17 START sql view model GOLD.active_customers_by_region ................... [RUN]
+[2025-06-23T06:02:54.969+0000] {subprocess.py:93} INFO - [0m06:02:54  2 of 17 START sql view model GOLD.average_shipment_cost_by_priority ............ [RUN]
+[2025-06-23T06:02:54.976+0000] {subprocess.py:93} INFO - [0m06:02:54  3 of 17 START sql view model GOLD.current_status_of_active_shipments ........... [RUN]
+[2025-06-23T06:02:54.980+0000] {subprocess.py:93} INFO - [0m06:02:54  4 of 17 START sql view model GOLD.customer_type_distribution ................... [RUN]
+[2025-06-23T06:02:56.696+0000] {subprocess.py:93} INFO - [0m06:02:56  1 of 17 OK created sql view model GOLD.active_customers_by_region .............. [[32mSUCCESS 1[0m in 1.70s]
+[2025-06-23T06:02:56.715+0000] {subprocess.py:93} INFO - [0m06:02:56  5 of 17 START sql view model GOLD.delayed_shipments ............................ [RUN]
+[2025-06-23T06:02:57.263+0000] {subprocess.py:93} INFO - [0m06:02:57  5 of 17 OK created sql view model GOLD.delayed_shipments ....................... [[32mSUCCESS 1[0m in 0.52s]
+[2025-06-23T06:02:57.286+0000] {subprocess.py:93} INFO - [0m06:02:57  6 of 17 START sql view model GOLD.delivery_attempts_per_shipment ............... [RUN]
+[2025-06-23T06:02:57.348+0000] {subprocess.py:93} INFO - [0m06:02:57  3 of 17 OK created sql view model GOLD.current_status_of_active_shipments ...... [[32mSUCCESS 1[0m in 2.34s]
+[2025-06-23T06:02:57.372+0000] {subprocess.py:93} INFO - [0m06:02:57  7 of 17 START sql view model GOLD.distance_traveled ............................ [RUN]
+[2025-06-23T06:02:57.598+0000] {subprocess.py:93} INFO - [0m06:02:57  4 of 17 OK created sql view model GOLD.customer_type_distribution .............. [[32mSUCCESS 1[0m in 2.58s]
+[2025-06-23T06:02:57.630+0000] {subprocess.py:93} INFO - [0m06:02:57  2 of 17 OK created sql view model GOLD.average_shipment_cost_by_priority ....... [[32mSUCCESS 1[0m in 2.63s]
+[2025-06-23T06:02:57.661+0000] {subprocess.py:93} INFO - [0m06:02:57  8 of 17 START sql view model GOLD.insurance_vs_penalty_costs ................... [RUN]
+[2025-06-23T06:02:57.681+0000] {subprocess.py:93} INFO - [0m06:02:57  9 of 17 START sql view model GOLD.ontime_delivery_rate ......................... [RUN]
+[2025-06-23T06:02:57.880+0000] {subprocess.py:93} INFO - [0m06:02:57  6 of 17 OK created sql view model GOLD.delivery_attempts_per_shipment .......... [[32mSUCCESS 1[0m in 0.59s]
+[2025-06-23T06:02:57.894+0000] {subprocess.py:93} INFO - [0m06:02:57  10 of 17 START sql view model GOLD.reasons_for_delay ........................... [RUN]
+[2025-06-23T06:02:57.996+0000] {subprocess.py:93} INFO - [0m06:02:57  7 of 17 OK created sql view model GOLD.distance_traveled ....................... [[32mSUCCESS 1[0m in 0.61s]
+[2025-06-23T06:02:58.025+0000] {subprocess.py:93} INFO - [0m06:02:58  11 of 17 START sql view model GOLD.revenue_vs_cost_by_transport_mode ........... [RUN]
+[2025-06-23T06:02:58.165+0000] {subprocess.py:93} INFO - [0m06:02:58  9 of 17 OK created sql view model GOLD.ontime_delivery_rate .................... [[32mSUCCESS 1[0m in 0.46s]
+[2025-06-23T06:02:58.170+0000] {subprocess.py:93} INFO - [0m06:02:58  8 of 17 OK created sql view model GOLD.insurance_vs_penalty_costs .............. [[32mSUCCESS 1[0m in 0.49s]
+[2025-06-23T06:02:58.191+0000] {subprocess.py:93} INFO - [0m06:02:58  12 of 17 START sql view model GOLD.shipment_volume_over_time ................... [RUN]
+[2025-06-23T06:02:58.196+0000] {subprocess.py:93} INFO - [0m06:02:58  13 of 17 START sql view model GOLD.shipments_by_priority_level ................. [RUN]
+[2025-06-23T06:02:58.336+0000] {subprocess.py:93} INFO - [0m06:02:58  10 of 17 OK created sql view model GOLD.reasons_for_delay ...................... [[32mSUCCESS 1[0m in 0.43s]
+[2025-06-23T06:02:58.368+0000] {subprocess.py:93} INFO - [0m06:02:58  14 of 17 START sql view model GOLD.top_revenue_generating_customers ............ [RUN]
+[2025-06-23T06:02:58.487+0000] {subprocess.py:93} INFO - [0m06:02:58  11 of 17 OK created sql view model GOLD.revenue_vs_cost_by_transport_mode ...... [[32mSUCCESS 1[0m in 0.45s]
+[2025-06-23T06:02:58.502+0000] {subprocess.py:93} INFO - [0m06:02:58  15 of 17 START sql view model GOLD.total_shipments_by_shipment_type ............ [RUN]
+[2025-06-23T06:02:58.670+0000] {subprocess.py:93} INFO - [0m06:02:58  12 of 17 OK created sql view model GOLD.shipment_volume_over_time .............. [[32mSUCCESS 1[0m in 0.46s]
+[2025-06-23T06:02:58.675+0000] {subprocess.py:93} INFO - [0m06:02:58  13 of 17 OK created sql view model GOLD.shipments_by_priority_level ............ [[32mSUCCESS 1[0m in 0.46s]
+[2025-06-23T06:02:58.694+0000] {subprocess.py:93} INFO - [0m06:02:58  16 of 17 START sql view model GOLD.vehicle_utilization ......................... [RUN]
+[2025-06-23T06:02:58.699+0000] {subprocess.py:93} INFO - [0m06:02:58  17 of 17 START sql view model GOLD.warehouse_utilization ....................... [RUN]
+[2025-06-23T06:02:58.827+0000] {subprocess.py:93} INFO - [0m06:02:58  14 of 17 OK created sql view model GOLD.top_revenue_generating_customers ....... [[32mSUCCESS 1[0m in 0.44s]
+[2025-06-23T06:02:58.887+0000] {subprocess.py:93} INFO - [0m06:02:58  15 of 17 OK created sql view model GOLD.total_shipments_by_shipment_type ....... [[32mSUCCESS 1[0m in 0.38s]
+[2025-06-23T06:02:59.222+0000] {subprocess.py:93} INFO - [0m06:02:59  17 of 17 OK created sql view model GOLD.warehouse_utilization .................. [[32mSUCCESS 1[0m in 0.48s]
+[2025-06-23T06:02:59.228+0000] {subprocess.py:93} INFO - [0m06:02:59  16 of 17 OK created sql view model GOLD.vehicle_utilization .................... [[32mSUCCESS 1[0m in 0.51s]
+[2025-06-23T06:03:00.455+0000] {subprocess.py:93} INFO - [0m06:03:00
+[2025-06-23T06:03:00.463+0000] {subprocess.py:93} INFO - [0m06:03:00  Finished running 17 view models in 0 hours 0 minutes and 8.08 seconds (8.08s).
+[2025-06-23T06:03:00.731+0000] {subprocess.py:93} INFO - [0m06:03:00
+[2025-06-23T06:03:00.734+0000] {subprocess.py:93} INFO - [0m06:03:00  [32mCompleted successfully[0m
+[2025-06-23T06:03:00.736+0000] {subprocess.py:93} INFO - [0m06:03:00
+[2025-06-23T06:03:00.743+0000] {subprocess.py:93} INFO - [0m06:03:00  Done. PASS=17 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=17
+[2025-06-23T06:03:03.755+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2025-06-23T06:03:03.774+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-06-23T06:03:04.507+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=stream_dag, task_id=dbt_run, run_id=scheduled__2025-06-23T06:00:00+00:00, execution_date=20250623T060000, start_date=20250623T060230, end_date=20250623T060304
+[2025-06-23T06:03:04.855+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2025-06-23T06:03:05.097+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-06-23T06:03:05.125+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

@@ -6,16 +6,16 @@ from datetime import datetime, timedelta
 default_args = {
     'owner': 'Sharaf',
     'depends_on_past': False,
-    'start_date': datetime(2025, 6, 20),
+    'start_date': datetime(2025, 7, 1),
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
 
 # Define the DAG
 dag = DAG(
-    'stream_dag',
+    'historical_dag',
     default_args=default_args,
-    schedule='*/2 * * * *',  # Run every minute
+    schedule='0 0 1 */3 *',     # Run on the first day of every third month at midnight
     catchup=False,
 )
 
@@ -29,7 +29,7 @@ dbt_test = BashOperator(
 
 dbt_run = BashOperator(
     task_id='dbt_run',
-    bash_command=f'cd {DBT_PROJECT_DIR} && dbt run --select cost_analysis customer_insights delivery_performance operational_insights shipment_tracking shipments_overview',
+    bash_command=f'cd {DBT_PROJECT_DIR} && dbt run --select hist_customer_insights hist_revenue_trends hist_shipment_volume',
     dag=dag,
 )
 

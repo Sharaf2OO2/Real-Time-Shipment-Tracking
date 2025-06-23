@@ -1,0 +1,43 @@
+[2025-06-23T06:02:06.041+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2025-06-23T06:02:06.092+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: stream_dag.dbt_test scheduled__2025-06-23T06:00:00+00:00 [queued]>
+[2025-06-23T06:02:06.107+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: stream_dag.dbt_test scheduled__2025-06-23T06:00:00+00:00 [queued]>
+[2025-06-23T06:02:06.110+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2025-06-23T06:02:06.137+0000] {taskinstance.py:2330} INFO - Executing <Task(BashOperator): dbt_test> on 2025-06-23 06:00:00+00:00
+[2025-06-23T06:02:06.154+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:62: DeprecationWarning: This process (pid=342) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2025-06-23T06:02:06.157+0000] {standard_task_runner.py:64} INFO - Started process 344 to run task
+[2025-06-23T06:02:06.156+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'stream_dag', 'dbt_test', 'scheduled__2025-06-23T06:00:00+00:00', '--job-id', '10', '--raw', '--subdir', 'DAGS_FOLDER/stream_dag.py', '--cfg-path', '/tmp/tmp4mzpn9er']
+[2025-06-23T06:02:06.163+0000] {standard_task_runner.py:91} INFO - Job 10: Subtask dbt_test
+[2025-06-23T06:02:06.259+0000] {task_command.py:426} INFO - Running <TaskInstance: stream_dag.dbt_test scheduled__2025-06-23T06:00:00+00:00 [running]> on host b2b82406f119
+[2025-06-23T06:02:06.452+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='Sharaf' AIRFLOW_CTX_DAG_ID='stream_dag' AIRFLOW_CTX_TASK_ID='dbt_test' AIRFLOW_CTX_EXECUTION_DATE='2025-06-23T06:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2025-06-23T06:00:00+00:00'
+[2025-06-23T06:02:06.459+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2025-06-23T06:02:06.463+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2025-06-23T06:02:06.476+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'cd /opt/***/dbt_ && dbt test']
+[2025-06-23T06:02:06.506+0000] {subprocess.py:86} INFO - Output:
+[2025-06-23T06:02:12.884+0000] {subprocess.py:93} INFO - [0m06:02:12  Running with dbt=1.10.2
+[2025-06-23T06:02:15.408+0000] {subprocess.py:93} INFO - [0m06:02:15  Registered adapter: snowflake=1.9.4
+[2025-06-23T06:02:17.654+0000] {subprocess.py:93} INFO - [0m06:02:17  Found 23 models, 4 data tests, 4 sources, 476 macros
+[2025-06-23T06:02:17.665+0000] {subprocess.py:93} INFO - [0m06:02:17
+[2025-06-23T06:02:17.668+0000] {subprocess.py:93} INFO - [0m06:02:17  Concurrency: 4 threads (target='dev')
+[2025-06-23T06:02:17.671+0000] {subprocess.py:93} INFO - [0m06:02:17
+[2025-06-23T06:02:19.909+0000] {subprocess.py:93} INFO - [0m06:02:19  1 of 4 START test source_not_null_silver_data_customers_customer_id ............ [RUN]
+[2025-06-23T06:02:19.913+0000] {subprocess.py:93} INFO - [0m06:02:19  2 of 4 START test source_not_null_silver_data_shipments_customer_id ............ [RUN]
+[2025-06-23T06:02:19.916+0000] {subprocess.py:93} INFO - [0m06:02:19  3 of 4 START test source_unique_silver_data_customers_customer_id .............. [RUN]
+[2025-06-23T06:02:19.923+0000] {subprocess.py:93} INFO - [0m06:02:19  4 of 4 START test source_unique_silver_data_shipments_shipment_id .............. [RUN]
+[2025-06-23T06:02:21.269+0000] {subprocess.py:93} INFO - [0m06:02:21  1 of 4 PASS source_not_null_silver_data_customers_customer_id .................. [[32mPASS[0m in 1.32s]
+[2025-06-23T06:02:22.286+0000] {subprocess.py:93} INFO - [0m06:02:22  4 of 4 PASS source_unique_silver_data_shipments_shipment_id .................... [[32mPASS[0m in 2.33s]
+[2025-06-23T06:02:22.399+0000] {subprocess.py:93} INFO - [0m06:02:22  3 of 4 PASS source_unique_silver_data_customers_customer_id .................... [[32mPASS[0m in 2.45s]
+[2025-06-23T06:02:22.470+0000] {subprocess.py:93} INFO - [0m06:02:22  2 of 4 PASS source_not_null_silver_data_shipments_customer_id .................. [[32mPASS[0m in 2.53s]
+[2025-06-23T06:02:23.615+0000] {subprocess.py:93} INFO - [0m06:02:23
+[2025-06-23T06:02:23.618+0000] {subprocess.py:93} INFO - [0m06:02:23  Finished running 4 data tests in 0 hours 0 minutes and 5.94 seconds (5.94s).
+[2025-06-23T06:02:23.809+0000] {subprocess.py:93} INFO - [0m06:02:23
+[2025-06-23T06:02:23.813+0000] {subprocess.py:93} INFO - [0m06:02:23  [32mCompleted successfully[0m
+[2025-06-23T06:02:23.816+0000] {subprocess.py:93} INFO - [0m06:02:23
+[2025-06-23T06:02:23.821+0000] {subprocess.py:93} INFO - [0m06:02:23  Done. PASS=4 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=4
+[2025-06-23T06:02:26.162+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2025-06-23T06:02:26.164+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2025-06-23T06:02:26.217+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=stream_dag, task_id=dbt_test, run_id=scheduled__2025-06-23T06:00:00+00:00, execution_date=20250623T060000, start_date=20250623T060206, end_date=20250623T060226
+[2025-06-23T06:02:26.284+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2025-06-23T06:02:26.321+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2025-06-23T06:02:26.326+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
