@@ -1,0 +1,7 @@
+{"timestamp":"2025-06-23T02:31:56.790048","level":"info","event":"DAG bundles loaded: dags-folder","logger":"airflow.dag_processing.bundles.manager.DagBundlesManager"}
+{"timestamp":"2025-06-23T02:31:56.792211","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/stream_dag.py","logger":"airflow.models.dagbag.DagBag"}
+{"timestamp":"2025-06-23T02:31:56.882149","level":"info","event":"Tmp dir root location: /tmp","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
+{"timestamp":"2025-06-23T02:31:56.888433","level":"info","event":"Running command: ['/usr/bin/bash', '-c', 'cd /opt/airflow/dbt_ && dbt test']","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
+{"timestamp":"2025-06-23T02:31:56.928444","level":"info","event":"Output:","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
+{"timestamp":"2025-06-23T02:32:08.808531","level":"info","event":"\u001b[0m02:32:08  Running with dbt=1.10.2","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
+{"timestamp":"2025-06-23T02:32:20.138606","level":"info","event":"\u001b[0m02:32:20  Registered adapter: snowflake=1.9.4","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook"}
