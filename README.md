@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/3185ba84-233f-4c41-a8c5-5f083938375e)# Real-Time Shipment Tracking System
+# Real-Time Shipment Tracking System
 
 ## 🚀 Project Overview
 
